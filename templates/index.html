@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>2D to VR180 Converter</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <h1>2D to VR180 Video Converter</h1>
+
+      {% if error %}
+      <div class="error">{{ error }}</div>
+      {% endif %}
+
+      <form method="POST" enctype="multipart/form-data" id="upload-form">
+        <label for="video">Upload 2D Video Clip (MP4 max 100MB):</label>
+        <input
+          type="file"
+          name="video"
+          id="video"
+          accept="video/mp4"
+          required
+        />
+        <button type="submit">Convert to VR180</button>
+      </form>
+
+      <div id="progress-section" style="display: none">
+        <h3>Processing Progress</h3>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <p id="progress-text"></p>
+      </div>
+
+      {% if task_id %}
+      <div id="preview-section">
+        <h3>Preview VR180 Video</h3>
+        <video
+          id="preview-video"
+          controls
+          width="640"
+          height="360"
+          crossorigin="anonymous"
+        ></video>
+        <br />
+        <a
+          id="download-link"
+          href="{{ url_for('download_video', filename=output_filename) }}"
+          download
+          >Download VR180 Video</a
+        >
+      </div>
+      {% endif %}
+    </div>
+
+    <script>
+      const taskId = "{{ task_id }}";
+      const previewVideo = document.getElementById("preview-video");
+      const progressSection = document.getElementById("progress-section");
+      const progressFill = document.getElementById("progress-fill");
+      const progressText = document.getElementById("progress-text");
+
+      progressSection.style.display = "block";
+
+      // Poll processing status every 2 seconds
+      const intervalId = setInterval(() => {
+        fetch(`/status/${taskId}`)
+          .then((response) => response.json())
+          .then((data) => {
+            progressFill.style.width = data.progress + "%";
+            progressText.textContent = data.status;
+
+            if (data.progress >= 100) {
+              clearInterval(intervalId);
+              progressText.textContent = "Conversion complete!";
+              previewVideo.src = `/preview/{{ output_filename }}`;
+              previewVideo.load();
+            }
+          });
+      }, 2000);
+    </script>
+  </body>
+</html>
