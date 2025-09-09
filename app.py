@@ -4,7 +4,7 @@ import uuid
 import cv2
 import numpy as np
 from PIL import Image
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify
+from flask import Flask, render_template, request, send_from_directory, jsonify
 import torch
 from transformers import AutoImageProcessor, AutoModelForDepthEstimation
 import subprocess
@@ -12,7 +12,7 @@ import subprocess
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['PROCESSED_FOLDER'] = 'processed'
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB max upload
+app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 100MB max upload
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['PROCESSED_FOLDER'], exist_ok=True)
@@ -172,4 +172,4 @@ def download_video(filename):
     return send_from_directory(app.config['PROCESSED_FOLDER'], filename, as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=8080)
